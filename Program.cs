@@ -1,6 +1,7 @@
 ﻿List<IDay> Days = new()
 {
     new Day01(),
+    new Day02(),
 };
 
 foreach (var day in Days)
