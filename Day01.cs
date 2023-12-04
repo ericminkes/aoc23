@@ -2,9 +2,90 @@
 {
     public string Number => "01";
 
-    public string Part1() => "TODO";
+    public string Part1() => $"Test: {Impl1(Test)}\nReal: {Impl1(Input)}";
 
-    public string Part2() => "TODO";
+    private string Impl1(string input) => input.Split(Environment.NewLine).Sum(LineNumber1).ToString();
+
+    public string Part2() => $"Test: {Impl2(Test2)}\nReal: {Impl2(Input)}";
+
+    private string Impl2(string input) => input.Split(Environment.NewLine).Sum(LineNumber2).ToString();
+
+    private int LineNumber1(string line)
+    {
+        return 10 * (line.First(IsDigit) - '0') + (line.Last(IsDigit) - '0');
+    }
+
+    private int LineNumber2(string line)
+    {
+        Dictionary<string, int> words = new()
+        {
+            { "one", 1 }, { "two", 2 }, { "three", 3 }, { "four", 4 }, { "five", 5 }, { "six", 6 }, { "seven", 7 }, { "eight", 8 }, { "nine", 9 }
+        };
+
+         int FirstDigit(string line)
+         {
+             for (var idx = 0; idx < line.Length; idx++)
+             {
+                 if (IsDigit(line[idx]))
+                 {
+                     return line[idx] - '0';
+                 }
+                 foreach (var word in words)
+                 {
+                     if (line.Substring(idx).StartsWith(word.Key))
+                     {
+                         return word.Value;
+                     }
+                 }
+             }
+             throw new ArgumentException("No digit found");
+         }
+
+         int LastDigit(string line)
+         {
+             for (var idx = line.Length - 1; idx >= 0; idx--)
+             {
+                 if (IsDigit(line[idx]))
+                 {
+                     return line[idx] - '0';
+                 }
+                 foreach (var word in words)
+                 {
+                     if (line.Substring(0, idx + 1).EndsWith(word.Key))
+                     {
+                         return word.Value;
+                     }
+                 }
+             }
+             throw new ArgumentException("No digit found");
+         }
+
+        return 10 * FirstDigit(line) + LastDigit(line);
+    }
+
+    private bool IsDigit(char c)
+    {
+        return c >= '0' && c <= '9';
+    }
+
+    private const string Test =
+        """
+        1abc2
+        pqr3stu8vwx
+        a1b2c3d4e5f
+        treb7uchet
+        """;
+
+    private const string Test2 =
+        """
+        two1nine
+        eightwothree
+        abcone2threexyz
+        xtwone3four
+        4nineeightseven2
+        zoneight234
+        7pqrstsixteen
+        """;
 
     private const string Input =
         """

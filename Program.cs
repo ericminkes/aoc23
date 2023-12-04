@@ -5,7 +5,6 @@
 
 foreach (var day in Days)
 {
-    Console.WriteLine($"Day {day.Number}, part 1: {day.Part1()}");
-    Console.WriteLine($"Day {day.Number}, part 2: {day.Part2()}");
-    Console.WriteLine();
+    Console.WriteLine($"Day {day.Number}, part 1:\n{day.Part1()}");
+    Console.WriteLine($"Day {day.Number}, part 2:\n{day.Part2()}\n");
 }
