@@ -1,10 +1,10 @@
 ﻿public class Day03 : IDay
 {
-    public string Number => "02";
+    public string Number => "03";
 
     public string Part1() => $"Test: {Impl1(Test)} (verwacht 4361)\nReal: {Impl1(Input)}";
 
-    public string Part2() => "TODO"; //$"Test: {Impl2(Test1)} (verwacht 2286)\nReal: {Impl2(Input)}";
+    public string Part2() => $"Test: {Impl2(Test)} (verwacht 467835)\nReal: {Impl2(Input)}";
 
     private string Impl1(string input)
     {
@@ -19,25 +19,19 @@
                 {
                     var isPart = false;
                     var x2 = x + 1;
-                    while (x2 < grid.GetLength(0) && grid[x2, y].IsDigit())
+                    while (grid[x2, y].IsDigit())
                     {
                         x2++;
                     }
                     for (var y3 = y - 1; y3 <= y + 1; y3++)
                     {
-                        if (y3 >= 0 && y3 < grid.GetLength(1))
+                        for (var x3 = x - 1; x3 <= x2; x3++)
                         {
-                            for (var x3 = x - 1; x3 <= x2; x3++)
+                            if (y3 != y || (x3 < x || x3 >= x2))
                             {
-                                if (x3 >= 0 && x3 < grid.GetLength(0))
+                                if (grid[x3, y3] != '.')
                                 {
-                                    if (y3 != y || (x3 < x || x3 >= x2))
-                                    {
-                                        if (grid[x3, y3] != '.')
-                                        {
-                                            isPart = true;
-                                        }
-                                    }
+                                    isPart = true;
                                 }
                             }
                         }
@@ -59,13 +53,66 @@
         return total.ToString();
     }
 
+    private string Impl2(string input)
+    {
+        var total = 0L;
+        var grid = ParseGrid(input);
+        for (var y = 0; y < grid.GetLength(1); y++)
+        {
+            for (var x = 0; x < grid.GetLength(0); x++)
+            {
+                if (grid[x, y] == '*')
+                {
+                    var numbers = new List<long>();
+                    for (var y2 = y - 1; y2 <= y + 1; y2++)
+                    {
+                        for (var x2 = x - 1; x2 <= x + 1; x2++)
+                        {
+                            if (grid[x2, y2].IsDigit())
+                            {
+                                var xb = x2;
+                                while (grid[xb - 1, y2].IsDigit())
+                                {
+                                    xb--;
+                                }
+                                var xe = x2;
+                                while (grid[xe + 1, y2].IsDigit())
+                                {
+                                    xe++;
+                                }
+                                if (x2 == x - 1 || !grid[x2 - 1, y2].IsDigit())
+                                {
+                                    var n = 0L;
+                                    for (var x3 = xb; x3 <= xe; x3++)
+                                    {
+                                        n *= 10;
+                                        n += grid[x3, y2] - '0';
+                                    }
+                                    numbers.Add(n);
+                                }
+                            }
+                        }
+                    }
+                    if (numbers.Count == 2)
+                    {
+                        total += numbers[0] * numbers[1];
+                    }
+                }
+            }
+        }
+        return total.ToString();
+    }
+
     private char[,] ParseGrid(string input)
     {
         var lines = input.Split(Environment.NewLine);
-        var grid = new char[lines[0].Length, lines.Length];
-        for (var x = 0; x < lines[0].Length; x++)
-            for (var y = 0; y < lines.Length; y++)
-                grid[x, y] = lines[y][x];
+        var grid = new char[lines[0].Length + 2, lines.Length + 2];
+        for (var x = 0; x < lines[0].Length + 2; x++)
+            for (var y = 0; y < lines.Length + 2; y++)
+                if (x == 0 || y == 0 || x == lines[0].Length + 1 || y == lines.Length + 1)
+                    grid[x, y] = '.';
+                else
+                    grid[x, y] = lines[y-1][x-1];
         return grid;
     }
 
