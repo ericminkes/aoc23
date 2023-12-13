@@ -2,9 +2,9 @@
 {
     public string Number => "07";
 
-    public string Part1() => $"Test: {Impl1(Test)} (verwacht 6440)\nReal: {Impl1(Input)}";
+    public string Part1() => $"Test: {Impl1(Test)} (verwacht 6440)\nReal: {Impl1(Input)} (correct 255048101)";
 
-    public string Part2() => $"Test: {Impl2(Test)} (verwacht 46)\nReal: {Impl2(Input)}";
+    public string Part2() => $"Test: {Impl2(Test)} (verwacht 5905)\nReal: {Impl2(Input)}";
 
     private string Impl1(string input)
     {
@@ -15,7 +15,9 @@
 
     private string Impl2(string input)
     {
-        return "TODO";
+        var hands = ParseInput(input, true);
+        var winnings = hands.OrderBy(x => x, new HandComparer()).Select((hand, rank) => (rank + 1) * hand.Bid).Sum();
+        return winnings.ToString();
     }
 
     private enum HandType
@@ -53,48 +55,65 @@
 
         public void Evaluate()
         {
-            var test = Cards.GroupBy(x => x).Select(x => new
+            HandType = EvaluateCards(Cards);
+        }
+
+        private HandType EvaluateCards(int[] cards)
+        {
+            var cardGroups = cards.GroupBy(x => x).Select(x => new
             {
                 Card = x.Key, Count = x.Count()
             }).ToList();
-            if (test.Count == 1)
+            if (cardGroups.Count == 1)
             {
-                HandType = HandType.FiveOfAKind;
+                return HandType.FiveOfAKind;
             }
-            else if (test.Count == 5)
+            if (cardGroups.Count == 5)
             {
-                HandType = HandType.HighCard;
+                return HandType.HighCard;
             }
-            else if (test.Count == 4)
+            if (cardGroups.Count == 4)
             {
-                HandType = HandType.OnePair;
+                return HandType.OnePair;
             }
-            else if (test.Count == 2)
+            if (cardGroups.Count == 2)
             {
-                if (test.Any(x => x.Count == 4))
+                if (cardGroups.Any(x => x.Count == 4))
                 {
-                    HandType = HandType.FourOfAKind;
+                    return HandType.FourOfAKind;
                 }
-                else
-                {
-                    HandType = HandType.FullHouse;
-                }
+                return HandType.FullHouse;
             }
-            else
+            if (cardGroups.Any(x => x.Count == 3))
             {
-                if (test.Any(x => x.Count == 3))
+                return HandType.ThreeOfAKind;
+            }
+            return HandType.TwoPair;
+        }
+
+        public void EvaluateWithJokers()
+        {
+            var maxHandType = EvaluateCards(Cards);
+            var jokers = Cards.Select((value, index) => value == 1 ? index : -1).Where(i => i != -1).ToList();
+            if (jokers.Count > 0)
+            {
+                for (var value = 2; value <= 14; value++)
                 {
-                    HandType = HandType.ThreeOfAKind;
-                }
-                else
-                {
-                    HandType = HandType.TwoPair;
+                    if (value == 11)
+                        continue;
+                    var cards = Cards.Select(x => x == 1 ? value : x).ToArray();
+                    var handtype = EvaluateCards(cards);
+                    if (handtype > maxHandType)
+                    {
+                        maxHandType = handtype;
+                    }
                 }
             }
+            HandType = maxHandType;
         }
     }
 
-    private List<Hand> ParseInput(string input)
+    private List<Hand> ParseInput(string input, bool part2 = false)
     {
         return input.Split(Environment.NewLine)
             .Select(line =>
@@ -112,12 +131,19 @@
                         'A' => 14,
                         'K' => 13,
                         'Q' => 12,
-                        'J' => 11,
+                        'J' => part2 ? 1 : 11,
                         'T' => 10,
                         _ => parts[0][i] - '0'
                     };
                 }
-                hand.Evaluate();
+                if (part2)
+                {
+                    hand.EvaluateWithJokers();
+                }
+                else
+                {
+                    hand.Evaluate();
+                }
                 return hand;
             }).ToList();
     }
