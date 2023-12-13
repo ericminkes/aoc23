@@ -5,9 +5,29 @@
         return c >= '0' && c <= '9';
     }
 
-    public static int BinarySearch<T>(this List<T> list, T item, Func<T, T, int> compare)
+    public static long LCM(long a, long b)
     {
-        return list.BinarySearch(item, new ComparisonComparer<T>(compare));
+        long num1, num2;
+        if (a > b)
+        {
+            num1 = a;
+            num2 = b;
+        }
+        else
+        {
+            num1 = b;
+            num2 = a;
+        }
+
+        for (long i = 1; i < num2; i++)
+        {
+            long mult = num1 * i;
+            if (mult % num2 == 0)
+            {
+                return mult;
+            }
+        }
+        return num1 * num2;
     }
 }
 
