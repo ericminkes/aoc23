@@ -6,11 +6,49 @@ public class Day10 : IDay
 
     public string Part1() => $"Test: {Impl1(Test)} (verwacht 8)\nReal: {Impl1(Input)} (correct 6968)";
 
-    public string Part2() => $"Test: {Impl2(Test)} (verwacht 6)\nReal: {Impl2(Input)}";
+    public string Part2() => $"Test: {Impl2(Test3)} (verwacht 4)\nTest 2: {Impl2(Test2)} (verwacht 10)\nReal: {Impl2(Input)} (correct 413)";
 
     private string Impl1(string input)
     {
         var grid = ParseInput(input);
+        var visited = FindPath(grid);
+        return visited.Values.Max().ToString();
+    }
+
+    private string Impl2(string input)
+    {
+        var grid = ParseInput(input);
+        var loop = FindPath(grid);
+        var inside = 0;
+        for (var y = 0; y < grid.Height; y++)
+        {
+            for (var x = 0; x < grid.Width; x++)
+            {
+                var point = new Point(x, y);
+                if (!loop.ContainsKey(point))
+                {
+                    var loopTiles = 0;
+                    for (var x2 = x + 1; x2 < grid.Width; x2++)
+                    {
+                        if (loop.ContainsKey(new Point(x2, y)))
+                        {
+                            var tile = grid.Maze[x2, y];
+                            if (tile.Up)
+                                loopTiles++;
+                        }
+                    }
+                    if (loopTiles % 2 == 1)
+                    {
+                        inside++;
+                    }
+                }
+            }
+        }
+        return inside.ToString();
+    }
+
+    private static Dictionary<Point, int> FindPath(Grid grid)
+    {
         var queue = new Queue<Point>();
         queue.Enqueue(grid.Start);
         var visited = new Dictionary<Point, int>();
@@ -48,12 +86,7 @@ public class Day10 : IDay
             }
             dist++;
         }
-        return visited.Values.Max().ToString();
-    }
-
-    private string Impl2(string input)
-    {
-        return "";
+        return visited;
     }
 
     private class Grid
@@ -123,6 +156,33 @@ public class Day10 : IDay
         SJLL7
         |F--J
         LJ.LJ
+        """;
+
+    private const string Test2 =
+        """
+        FF7FSF7F7F7F7F7F---7
+        L|LJ||||||||||||F--J
+        FL-7LJLJ||||||LJL-77
+        F--JF--7||LJLJ7F7FJ-
+        L---JF-JLJ.||-FJLJJ7
+        |F|F-JF---7F7-L7L|7|
+        |FFJF7L7F-JF7|JL---7
+        7-L-JL7||F7|L7F-7F7|
+        L.L7LFJ|||||FJL7||LJ
+        L7JLJL-JLJLJL--JLJ.L
+        """;
+
+    private const string Test3 =
+        """
+        ...........
+        .S-------7.
+        .|F-----7|.
+        .||.....||.
+        .||.....||.
+        .|L-7.F-J|.
+        .|..|.|..|.
+        .L--J.L--J.
+        ...........
         """;
 
     private const string Input =
