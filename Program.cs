@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿global using System.Drawing;
+global using static System.Math;
+
+using System.Diagnostics;
 
 List<IDay> Days = new()
 {
@@ -12,8 +15,10 @@ List<IDay> Days = new()
     new Day08(),
     new Day09(),
     new Day10(),
+    new Day11(),
 };
 
+var swTotal = Stopwatch.StartNew();
 foreach (var day in Days)
 {
     var sw = Stopwatch.StartNew();
@@ -21,3 +26,4 @@ foreach (var day in Days)
     sw.Restart();
     Console.WriteLine($"Day {day.Number}, part 2:\n{day.Part2()}\nTime: {sw.ElapsedMilliseconds}ms\n");
 }
+Console.WriteLine($"Total time: {swTotal.ElapsedMilliseconds}ms");

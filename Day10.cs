@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-public class Day10 : IDay
+﻿public class Day10 : IDay
 {
     public string Number => "10";
 
