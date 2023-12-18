@@ -13,17 +13,86 @@ public class Day12 : IDay
         foreach (var config in configs)
         {
             var missing = config.Blocks.Sum() - config.Springs.Count(s => s == Spring.Damaged);
-            var unknowns = config.Springs.Count(s => s == Spring.Unknown);
-            if (missing == 0 || missing == unknowns)
+            var unknowns = config.Springs.Select((s, idx) => s == Spring.Unknown ? idx : -1).Where(idx => idx != -1).ToArray();
+            foreach (var combination in GetCombinations(unknowns, missing))
             {
-                total += 1;
-            }
-            else
-            {
-                
+                Spring[] fullConfig = [.. config.Springs];
+                foreach (var idx in unknowns)
+                {
+                    fullConfig[idx] = combination.Contains(idx) ? Spring.Damaged : Spring.Operational;
+                }
+                if (AreEqual(config.Blocks, Eval(fullConfig)))
+                {
+                    total++;
+                }
             }
         }
         return total.ToString();
+    }
+
+    private bool AreEqual(List<int> orig, List<int> current)
+    {
+        if (orig.Count != current.Count)
+        {
+            return false;
+        }
+        for (var i = 0; i < orig.Count; i++)
+        {
+            if (orig[i] != current[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private List<int> Eval(Spring[] config)
+    {
+        var count = 0;
+        var result = new List<int>();
+        foreach (var spring in config)
+        {
+            if (spring == Spring.Damaged)
+            {
+                count++;
+            }
+            else
+            {
+                if (count > 0)
+                {
+                    result.Add(count);
+                }
+                count = 0;
+            }
+        }
+        if (count > 0)
+        {
+            result.Add(count);
+        }
+        return result;
+    }
+
+    private IEnumerable<IEnumerable<int>> GetCombinations(int[] unknowns, int k)
+    {
+        var size = unknowns.Length;
+        IEnumerable<IEnumerable<int>> Runner(IEnumerable<int> list, int n)
+        {
+            var skip = 1;
+            foreach (var headList in list.Take(size - k + 1).Select(h => new[] { h }))
+            {
+                if (n == 1)
+                    yield return headList;
+                else
+                {
+                    foreach (var tailList in Runner(list.Skip(skip), n - 1))
+                    {
+                        yield return headList.Concat(tailList);
+                    }
+                    skip++;
+                }
+            }
+        }
+        return Runner(unknowns, k);
     }
 
     private enum Spring
@@ -35,7 +104,7 @@ public class Day12 : IDay
 
     private class Config
     {
-        public List<Spring> Springs { get; set; } = new();
+        public Spring[] Springs { get; set; }
         public List<int> Blocks { get; set; }
     }
 
@@ -46,11 +115,14 @@ public class Day12 : IDay
         {
             var config = new Config();
             var parts = line.Split(' ');
-            foreach (var c in parts[0])
+            config.Springs = new Spring[parts[0].Length];
+            for (var i = 0; i < parts[0].Length; i++)
             {
-                config.Springs.Add(c switch { '.' => Spring.Operational, '#' => Spring.Damaged, _ => Spring.Unknown });
+                var c = parts[0][i];
+                config.Springs[i] = c switch { '.' => Spring.Operational, '#' => Spring.Damaged, _ => Spring.Unknown };
             }
             config.Blocks = parts[1].Split(',').Select(int.Parse).ToList();
+            result.Add(config);
         }
         return result;
     }

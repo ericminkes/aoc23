@@ -16,6 +16,8 @@ List<IDay> Days = new()
     new Day09(),
     new Day10(),
     new Day11(),
+    //new Day12(),
+
 };
 
 var swTotal = Stopwatch.StartNew();
