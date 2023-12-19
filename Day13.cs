@@ -2,7 +2,7 @@
 {
     public string Number => "13";
 
-    public string Part1() => $"Test: {Impl1(Test)} (verwacht 405)\nReal: {Impl1(Input)} (correct ???)";
+    public string Part1() => $"Test: {Impl1(Test)} (verwacht 405)\nReal: {Impl1(Input)} (correct 34202)";
 
     public string Part2() => $"Test: {Impl2(Test)} (verwacht ???)\nReal: {Impl2(Input)} (correct ???)";
 
@@ -12,12 +12,12 @@
         var horizontal = 0;
         foreach (var grid in ParseInput(input))
         {
-            var possibleV = Enumerable.Range(1, grid.GetLength(1) - 2).ToList();
+            var possibleH = Enumerable.Range(1, grid.GetLength(1) - 1).ToList();
             for (int x = 0; x < grid.GetLength(0); x++)
             {
-                for (int y = 1; y < grid.GetLength(1) - 1; y++)
+                for (int y = 1; y < grid.GetLength(1); y++)
                 {
-                    if (!possibleV.Contains(y))
+                    if (!possibleH.Contains(y))
                     {
                         continue;
                     }
@@ -32,18 +32,17 @@
                     }
                     if (!isValid)
                     {
-                        possibleV.Remove(y);
+                        possibleH.Remove(y);
                     }
                 }
             }
-            vertical += possibleV.Sum();
 
-            var possibleH = Enumerable.Range(1, grid.GetLength(0) - 2).ToList();
+            var possibleV = Enumerable.Range(1, grid.GetLength(0) - 1).ToList();
             for (int y = 0; y < grid.GetLength(1); y++)
             {
-                for (int x = 1; x < grid.GetLength(0) - 1; x++)
+                for (int x = 1; x < grid.GetLength(0); x++)
                 {
-                    if (!possibleH.Contains(x))
+                    if (!possibleV.Contains(x))
                     {
                         continue;
                     }
@@ -58,13 +57,14 @@
                     }
                     if (!isValid)
                     {
-                        possibleH.Remove(x);
+                        possibleV.Remove(x);
                     }
                 }
             }
             horizontal += possibleH.Sum();
+            vertical += possibleV.Sum();
         }
-        return (100 * vertical + horizontal).ToString();
+        return (100 * horizontal + vertical).ToString();
     }
 
     private string Impl2(string input)
