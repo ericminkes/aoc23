@@ -4,7 +4,7 @@
 
     public string Part1() => $"Test: {Impl1(Test)} (verwacht 405)\nReal: {Impl1(Input)} (correct 34202)";
 
-    public string Part2() => $"Test: {Impl2(Test)} (verwacht ???)\nReal: {Impl2(Input)} (correct ???)";
+    public string Part2() => $"Test: {Impl2(Test)} (verwacht 400)\nReal: {Impl2(Input)} (correct ???)";
 
     private string Impl1(string input)
     {
@@ -12,64 +12,119 @@
         var horizontal = 0;
         foreach (var grid in ParseInput(input))
         {
-            var possibleH = Enumerable.Range(1, grid.GetLength(1) - 1).ToList();
-            for (int x = 0; x < grid.GetLength(0); x++)
-            {
-                for (int y = 1; y < grid.GetLength(1); y++)
-                {
-                    if (!possibleH.Contains(y))
-                    {
-                        continue;
-                    }
-                    var isValid = true;
-                    for (var y2 = 0; y - y2 >= 1 && y + y2 < grid.GetLength(1); y2++)
-                    {
-                        if (grid[x, y + y2] != grid[x, y - 1 - y2])
-                        {
-                            isValid = false;
-                            break;
-                        }
-                    }
-                    if (!isValid)
-                    {
-                        possibleH.Remove(y);
-                    }
-                }
-            }
-
-            var possibleV = Enumerable.Range(1, grid.GetLength(0) - 1).ToList();
-            for (int y = 0; y < grid.GetLength(1); y++)
-            {
-                for (int x = 1; x < grid.GetLength(0); x++)
-                {
-                    if (!possibleV.Contains(x))
-                    {
-                        continue;
-                    }
-                    var isValid = true;
-                    for (var x2 = 0; x - x2 >= 1 && x + x2 < grid.GetLength(0); x2++)
-                    {
-                        if (grid[x + x2, y] != grid[x - 1 - x2, y])
-                        {
-                            isValid = false;
-                            break;
-                        }
-                    }
-                    if (!isValid)
-                    {
-                        possibleV.Remove(x);
-                    }
-                }
-            }
-            horizontal += possibleH.Sum();
-            vertical += possibleV.Sum();
+            var (hor, ver) = FindReflection(grid);
+            horizontal += hor;
+            vertical += ver;
         }
         return (100 * horizontal + vertical).ToString();
     }
 
+    private static (int Horizontal, int Vertical) FindReflection(bool[,] grid)
+    {
+        var possibleH = Enumerable.Range(1, grid.GetLength(1) - 1).ToList();
+        for (int x = 0; x < grid.GetLength(0); x++)
+        {
+            for (int y = 1; y < grid.GetLength(1); y++)
+            {
+                if (!possibleH.Contains(y))
+                {
+                    continue;
+                }
+                var isValid = IsValidColReflection(grid, y, x);
+                if (!isValid)
+                {
+                    possibleH.Remove(y);
+                }
+            }
+        }
+
+        var possibleV = Enumerable.Range(1, grid.GetLength(0) - 1).ToList();
+        for (int y = 0; y < grid.GetLength(1); y++)
+        {
+            for (int x = 1; x < grid.GetLength(0); x++)
+            {
+                if (!possibleV.Contains(x))
+                {
+                    continue;
+                }
+                var isValid = IsValidRowReflection(grid, x, y);
+                if (!isValid)
+                {
+                    possibleV.Remove(x);
+                }
+            }
+        }
+        return (possibleH.FirstOrDefault(0), possibleV.FirstOrDefault(0));
+    }
+
+    private static bool IsValidRowReflection(bool[,] grid, int x, int col)
+    {
+        var isValid = true;
+        for (var x2 = 0; x - x2 >= 1 && x + x2 < grid.GetLength(0); x2++)
+        {
+            if (grid[x + x2, col] != grid[x - 1 - x2, col])
+            {
+                isValid = false;
+                break;
+            }
+        }
+        return isValid;
+    }
+
+    private static bool IsValidColReflection(bool[,] grid, int y, int row)
+    {
+        var isValid = true;
+        for (var y2 = 0; y - y2 >= 1 && y + y2 < grid.GetLength(1); y2++)
+        {
+            if (grid[row, y + y2] != grid[row, y - 1 - y2])
+            {
+                isValid = false;
+                break;
+            }
+        }
+        return isValid;
+    }
+
     private string Impl2(string input)
     {
-        return "";
+        var vertical = 0;
+        var horizontal = 0;
+        foreach (var grid in ParseInput(input))
+        {
+            var found = false;
+            var (hor, ver) = FindReflection(grid);
+            var newHor = 0;
+            var newVer = 0;
+            for (var x = 0; x < grid.GetLength(0) && !found; x++)
+            {
+                for (var y = 0; y < grid.GetLength(1) && !found; y++)
+                {
+                    grid[x, y] = !grid[x, y];
+                    var (hor2, ver2) = FindReflection(grid);
+                    if ((hor2 == 0 && ver2 == 0) || (hor2 == hor && ver2 == ver))
+                    {
+                        continue;
+                    }
+                    if (hor2 != 0 && hor2 != hor)
+                    {
+                        newHor = hor2;
+                        newVer = 0;
+                        //found = true;
+                    }
+                    else if (ver2 != 0 && ver2 != ver)
+                    {
+                        newVer = ver2;
+                        newHor = 0;
+                        //found = true;
+                    }
+                    grid[x, y] = !grid[x, y];
+                }
+            }
+            Console.WriteLine($"Zonder: ({hor}, {ver}). Met: {newHor}, {newVer})");
+            horizontal += newHor;
+            vertical += newVer;
+        }
+        return (100 * horizontal + vertical).ToString();
     }
 
     private List<bool[,]> ParseInput(string input)
